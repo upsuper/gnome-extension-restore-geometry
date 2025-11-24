@@ -1,0 +1,26 @@
+{
+  "name": "restore-geometry",
+  "version": "0.0.0",
+  "description": "A GNOME Extension to automatically restore its previous geometry of window upon its opening",
+  "type": "module",
+  "private": true,
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/upsuper/restore-geometry.git"
+  },
+  "author": "Xidorn Quan <me@upsuper.org>",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/upsuper/restore-geometry/issues"
+  },
+  "homepage": "https://github.com/upsuper/restore-geometry",
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsc"
+  },
+  "dependencies": {
+    "@girs/gjs": "4.0.0-beta.38",
+    "@girs/gnome-shell": "^49.1.0",
+    "typescript": "^5.9.3"
+  }
+}
