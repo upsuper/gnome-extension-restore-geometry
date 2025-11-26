@@ -6,14 +6,14 @@
   "private": true,
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/upsuper/restore-geometry.git"
+    "url": "git+https://github.com/upsuper/gnome-extension-restore-geometry.git"
   },
   "author": "Xidorn Quan <me@upsuper.org>",
   "license": "GPL-3.0-or-later",
   "bugs": {
-    "url": "https://github.com/upsuper/restore-geometry/issues"
+    "url": "https://github.com/upsuper/gnome-extension-restore-geometry/issues"
   },
-  "homepage": "https://github.com/upsuper/restore-geometry",
+  "homepage": "https://github.com/upsuper/gnome-extension-restore-geometry",
   "sideEffects": false,
   "scripts": {
     "build": "tsc"

@@ -2,7 +2,7 @@
     "name": "Restore Geometry",
     "description": "An extension to automatically restore its previous geometry of window upon its opening",
     "uuid": "restore-geometry@upsuper.org",
-    "url": "https://github.com/upsuper/restore-geometry",
+    "url": "https://github.com/upsuper/gnome-extension-restore-geometry",
     "settings-schema": "org.gnome.shell.extensions.restore-geometry",
     "shell-version": [
         "49"
