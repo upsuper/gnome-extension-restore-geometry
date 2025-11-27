@@ -82,8 +82,6 @@ class RestoreGeometryExtension {
         actor.disconnect(signal);
       });
     }
-
-    // this._windowList.updateMenu();
   }
 
   trackWindow(window: Meta.Window) {
@@ -104,7 +102,6 @@ class RestoreGeometryExtension {
     this._saveTrackedWindows();
 
     this._trackWindow(window, wmclass);
-    // this._windowList.updateMenu();
   }
 
   untrackWindow(wmclass: string) {
@@ -116,8 +113,6 @@ class RestoreGeometryExtension {
         disconnect();
       }
     }
-
-    // this._windowList.updateMenu();
   }
 
   isTracked(wmclass: string): boolean {
