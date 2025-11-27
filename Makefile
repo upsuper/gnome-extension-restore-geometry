@@ -11,10 +11,7 @@ node_modules/.modules.yaml: pnpm-lock.yaml
 dist/extension.js: node_modules/.modules.yaml src/*.ts
 	pnpm build
 
-schemas/gschemas.compiled: schemas/org.gnome.shell.extensions.$(NAME).gschema.xml
-	glib-compile-schemas schemas
-
-$(NAME).zip: dist/extension.js schemas/gschemas.compiled
+$(NAME).zip: dist/extension.js
 	@cp -r schemas dist/
 	@cp metadata.json dist/
 	@(cd dist && zip ../$(NAME).zip -9r .)
