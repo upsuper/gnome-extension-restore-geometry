@@ -24,6 +24,8 @@ class RestoreGeometryExtension {
   private readonly _windowTrackers = new Map<Meta.Window, () => void>();
   private readonly _windowList: typeof WindowListToggle.prototype;
 
+  private _pendingSave: number | undefined;
+
   constructor(private readonly _settings: Gio.Settings) {
     const json = this._settings.get_string('tracked-windows');
     this._trackedWindows = JSON.parse(json);
@@ -59,6 +61,11 @@ class RestoreGeometryExtension {
     const disconnects = Array.from(this._windowTrackers.values());
     for (const disconnect of disconnects) {
       disconnect();
+    }
+    if (this._pendingSave) {
+      GLib.source_remove(this._pendingSave);
+      this._pendingSave = undefined;
+      this._flushTrackedWindows();
     }
     this._windowTrackers.clear();
     this._windowList.destroy();
@@ -124,23 +131,27 @@ class RestoreGeometryExtension {
       return;
     }
 
+    const doUpdateGeometry = () => {
+      const frame = window.get_frame_rect();
+      const geometry: WindowGeometry = {
+        x: frame.x,
+        y: frame.y,
+        width: frame.width,
+        height: frame.height,
+      };
+
+      this._trackedWindows[wmclass] = geometry;
+      this._saveTrackedWindows();
+    };
+
     let pendingUpdate: number | undefined;
     const updateGeometry = () => {
       if (pendingUpdate) {
         GLib.source_remove(pendingUpdate);
       }
       pendingUpdate = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
-        const frame = window.get_frame_rect();
-        const geometry: WindowGeometry = {
-          x: frame.x,
-          y: frame.y,
-          width: frame.width,
-          height: frame.height,
-        };
-
-        this._trackedWindows[wmclass] = geometry;
-        this._saveTrackedWindows();
         pendingUpdate = undefined;
+        doUpdateGeometry();
         return GLib.SOURCE_REMOVE;
       });
     };
@@ -160,22 +171,30 @@ class RestoreGeometryExtension {
       for (const signalId of signalIds) {
         window.disconnect(signalId);
       }
+      if (pendingUpdate) {
+        GLib.source_remove(pendingUpdate);
+        pendingUpdate = undefined;
+        doUpdateGeometry();
+      }
       this._windowTrackers.delete(window);
     };
     this._windowTrackers.set(window, disconnect);
   }
 
-  private _pendingSave: number | undefined;
   private _saveTrackedWindows() {
     if (this._pendingSave) {
       GLib.source_remove(this._pendingSave);
     }
     this._pendingSave = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
-      const json = JSON.stringify(this._trackedWindows);
-      this._settings.set_string('tracked-windows', json);
       this._pendingSave = undefined;
+      this._flushTrackedWindows();
       return GLib.SOURCE_REMOVE;
     });
+  }
+
+  private _flushTrackedWindows() {
+    const json = JSON.stringify(this._trackedWindows);
+    this._settings.set_string('tracked-windows', json);
   }
 
   getOpenWindows(): { window: Meta.Window; wmclass: string; tracked: boolean }[] {
