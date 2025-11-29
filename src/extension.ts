@@ -270,16 +270,12 @@ export default class RestoreGeometry extends Extension {
   private _impl: RestoreGeometryExtension | undefined;
 
   enable() {
-    if (this._impl) {
-      this._impl.destroy();
-    }
+    this._impl?.destroy();
     this._impl = new RestoreGeometryExtension(this.getSettings());
   }
 
   disable() {
-    if (this._impl) {
-      this._impl.destroy();
-      this._impl = undefined;
-    }
+    this._impl?.destroy();
+    this._impl = undefined;
   }
 }
