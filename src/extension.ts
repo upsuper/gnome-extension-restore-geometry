@@ -7,6 +7,8 @@ import * as QuickSettings from 'resource:///org/gnome/shell/ui/quickSettings.js'
 import * as PopupMenu from 'resource:///org/gnome/shell/ui/popupMenu.js';
 import { Extension } from 'resource:///org/gnome/shell/extensions/extension.js';
 
+const SETTING_KEY = 'tracked-windows';
+
 interface WindowGeometry {
   x: number;
   y: number;
@@ -27,7 +29,7 @@ class RestoreGeometryExtension {
   private _pendingSave: number | undefined;
 
   constructor(private readonly _settings: Gio.Settings) {
-    const json = this._settings.get_string('tracked-windows');
+    const json = this._settings.get_string(SETTING_KEY);
     this._trackedWindows = JSON.parse(json);
 
     this._windowList = new WindowListToggle(this);
@@ -194,7 +196,7 @@ class RestoreGeometryExtension {
 
   private _flushTrackedWindows() {
     const json = JSON.stringify(this._trackedWindows);
-    this._settings.set_string('tracked-windows', json);
+    this._settings.set_string(SETTING_KEY, json);
   }
 
   getOpenWindows(): { window: Meta.Window; wmclass: string; tracked: boolean }[] {
