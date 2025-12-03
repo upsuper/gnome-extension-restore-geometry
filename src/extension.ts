@@ -16,12 +16,12 @@ interface WindowGeometry {
   height: number;
 }
 
-interface TrackedWindows {
+interface SavedWindows {
   [wmclass: string]: WindowGeometry;
 }
 
 class RestoreGeometryExtension {
-  private readonly _trackedWindows: TrackedWindows;
+  private readonly _savedWindows: SavedWindows;
   private readonly _windowAddedId: number;
   private readonly _windowTrackers = new Map<Meta.Window, () => void>();
   private readonly _windowList: typeof WindowListToggle.prototype;
@@ -30,7 +30,7 @@ class RestoreGeometryExtension {
 
   constructor(private readonly _settings: Gio.Settings) {
     const json = this._settings.get_string(SETTING_KEY);
-    this._trackedWindows = JSON.parse(json);
+    this._savedWindows = JSON.parse(json);
 
     this._windowList = new WindowListToggle(this);
     Main.panel.statusArea.quickSettings.menu.addItem(this._windowList);
@@ -67,7 +67,7 @@ class RestoreGeometryExtension {
     if (this._pendingSave) {
       GLib.source_remove(this._pendingSave);
       this._pendingSave = undefined;
-      this._flushTrackedWindows();
+      this._flushSettings();
     }
     this._windowTrackers.clear();
     this._windowList.destroy();
@@ -85,7 +85,7 @@ class RestoreGeometryExtension {
     if (this.isTracked(wmclass)) {
       const actor = window.get_compositor_private() as Meta.WindowActor;
       const signal = actor.connect('first-frame', () => {
-        const { x, y, width, height } = this._trackedWindows[wmclass];
+        const { x, y, width, height } = this._savedWindows[wmclass];
         window.move_resize_frame(true, x, y, width, height);
         this._trackWindow(window, wmclass);
         actor.disconnect(signal);
@@ -107,15 +107,15 @@ class RestoreGeometryExtension {
       height: frame.height,
     };
 
-    this._trackedWindows[wmclass] = geometry;
-    this._saveTrackedWindows();
+    this._savedWindows[wmclass] = geometry;
+    this._saveSettings();
 
     this._trackWindow(window, wmclass);
   }
 
   untrackWindow(wmclass: string) {
-    delete this._trackedWindows[wmclass];
-    this._saveTrackedWindows();
+    delete this._savedWindows[wmclass];
+    this._saveSettings();
 
     for (const [window, disconnect] of this._windowTrackers.entries()) {
       if (window.get_wm_class() === wmclass) {
@@ -125,7 +125,7 @@ class RestoreGeometryExtension {
   }
 
   isTracked(wmclass: string): boolean {
-    return wmclass in this._trackedWindows;
+    return wmclass in this._savedWindows;
   }
 
   private _trackWindow(window: Meta.Window, wmclass: string) {
@@ -142,8 +142,8 @@ class RestoreGeometryExtension {
         height: frame.height,
       };
 
-      this._trackedWindows[wmclass] = geometry;
-      this._saveTrackedWindows();
+      this._savedWindows[wmclass] = geometry;
+      this._saveSettings();
     };
 
     let pendingUpdate: number | undefined;
@@ -183,19 +183,19 @@ class RestoreGeometryExtension {
     this._windowTrackers.set(window, disconnect);
   }
 
-  private _saveTrackedWindows() {
+  private _saveSettings() {
     if (this._pendingSave) {
       GLib.source_remove(this._pendingSave);
     }
     this._pendingSave = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
       this._pendingSave = undefined;
-      this._flushTrackedWindows();
+      this._flushSettings();
       return GLib.SOURCE_REMOVE;
     });
   }
 
-  private _flushTrackedWindows() {
-    const json = JSON.stringify(this._trackedWindows);
+  private _flushSettings() {
+    const json = JSON.stringify(this._savedWindows);
     this._settings.set_string(SETTING_KEY, json);
   }
 
