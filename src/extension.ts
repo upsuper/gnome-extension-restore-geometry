@@ -347,7 +347,7 @@ class WindowListToggle extends QuickSettings.QuickMenuToggle {
 
     for (const { window, wmclass, saved, locked } of windows) {
       const title = window.get_title() || wmclass;
-      const item = new LockableSwitchMenuItem(`${title} (${wmclass})`, saved, locked);
+      const item = new LockableSwitchMenuItem(title, saved, locked);
       item.connect('changed', (_item: typeof item, state: boolean, locked: boolean) => {
         this._extension.updateWindow(window, state, locked);
       });
