@@ -4,19 +4,13 @@ A GNOME Shell extension that automatically restores window geometry (position an
 
 ## Usage
 
-### Quick Settings Menu
-
 1. Open Quick Settings (click the system menu in the top-right corner)
-2. Look for the "Window Geometry" menu item
+2. Look for the "Geometry" menu item
 3. Click to expand and see all open windows
-4. Toggle the switch next to any window to start/stop tracking it
+4. Toggle the switch next to any window to enable / disable restoring it
+5. Optionally: click the lock icon to track the window dynamically
 
-### Automatic Restoration
-
-Once a window is tracked:
-1. The extension saves its current position and size
-2. When you move or resize the window, the new geometry is automatically saved
-3. When you close and reopen the window, it will restore to the saved geometry
+When the geometry is locked, the window will always restore to the geometry when it is locked (or enabled) upon opening, otherwise, the window will restore to the geometry before it is closed last time.
 
 ## Development
 
@@ -29,7 +23,7 @@ make pack
 
 ## License
 
-    Copyright (C) 2025  Upsuper
+    Copyright (C) 2025  Xidorn Quan
 
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU General Public License as published by
