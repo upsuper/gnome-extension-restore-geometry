@@ -328,13 +328,13 @@ class WindowListToggle extends QuickSettings.QuickMenuToggle {
     this.menu.setHeader('window-new-symbolic', 'Restore Geometry');
     this.menu.connect('open-state-changed', (_menu: typeof this.menu, open: boolean) => {
       if (open) {
-        this.updateMenu();
+        this._updateMenu();
       }
       return false;
     });
   }
 
-  updateMenu() {
+  private _updateMenu() {
     this.menu.removeAll();
 
     const windows = this._extension.getOpenWindows();
