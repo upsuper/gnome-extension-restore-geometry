@@ -5,6 +5,7 @@
     "url": "https://github.com/upsuper/gnome-extension-restore-geometry",
     "settings-schema": "org.gnome.shell.extensions.restore-geometry",
     "shell-version": [
+        "48",
         "49"
     ]
 }
