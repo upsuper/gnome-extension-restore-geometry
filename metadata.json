@@ -6,6 +6,7 @@
     "settings-schema": "org.gnome.shell.extensions.restore-geometry",
     "shell-version": [
         "48",
-        "49"
+        "49",
+        "50"
     ]
 }
