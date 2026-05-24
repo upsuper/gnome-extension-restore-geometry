@@ -78,7 +78,7 @@ class RestoreGeometryExtension {
     for (const disconnect of disconnects) {
       disconnect();
     }
-    if (this._pendingSave) {
+    if (this._pendingSave != null) {
       GLib.source_remove(this._pendingSave);
       this._pendingSave = undefined;
       this._flushSettings();
@@ -383,12 +383,13 @@ export default class RestoreGeometry extends Extension {
   private _impl: RestoreGeometryExtension | undefined;
 
   enable() {
-    this._impl?.destroy();
     this._impl = new RestoreGeometryExtension(this.getSettings());
   }
 
   disable() {
-    this._impl?.destroy();
-    this._impl = undefined;
+    if (this._impl) {
+      this._impl.destroy();
+      this._impl = undefined;
+    }
   }
 }
