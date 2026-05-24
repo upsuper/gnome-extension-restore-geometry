@@ -26,10 +26,11 @@ interface SavedWindows {
 
 class RestoreGeometryExtension {
   private readonly _savedWindows: SavedWindows;
-  private readonly _windowAddedId: number;
   private readonly _windowTrackers = new Map<Meta.Window, () => void>();
-  private readonly _windowList: typeof WindowListToggle.prototype;
+  private readonly _pendingIdleSources = new Set<number>();
 
+  private _windowAddedId: number | undefined;
+  private _windowList: typeof WindowListToggle.prototype | undefined;
   private _pendingSave: number | undefined;
 
   constructor(private readonly _settings: Gio.Settings) {
@@ -43,10 +44,13 @@ class RestoreGeometryExtension {
       'window-created',
       (_display: Meta.Display, window: Meta.Window) => {
         // Wait for window to be stable
-        GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+        let id: number;
+        id = GLib.idle_add(GLib.PRIORITY_DEFAULT, () => {
+          this._pendingIdleSources.delete(id);
           this._onWindowCreated(window);
           return GLib.SOURCE_REMOVE;
         });
+        this._pendingIdleSources.add(id);
       },
     );
 
@@ -62,7 +66,14 @@ class RestoreGeometryExtension {
   }
 
   destroy() {
-    global.display.disconnect(this._windowAddedId);
+    if (this._windowAddedId != null) {
+      global.display.disconnect(this._windowAddedId);
+      this._windowAddedId = undefined;
+    }
+    for (const id of this._pendingIdleSources) {
+      GLib.source_remove(id);
+    }
+    this._pendingIdleSources.clear();
     const disconnects = Array.from(this._windowTrackers.values());
     for (const disconnect of disconnects) {
       disconnect();
@@ -73,7 +84,10 @@ class RestoreGeometryExtension {
       this._flushSettings();
     }
     this._windowTrackers.clear();
-    this._windowList.destroy();
+    if (this._windowList) {
+      this._windowList.destroy();
+      this._windowList = undefined;
+    }
   }
 
   private _onWindowCreated(window: Meta.Window) {
@@ -326,11 +340,20 @@ class WindowListToggle extends QuickSettings.QuickMenuToggle {
     });
 
     this.menu.setHeader('window-new-symbolic', 'Restore Geometry');
-    this.menu.connect('open-state-changed', (_menu: typeof this.menu, open: boolean) => {
-      if (open) {
-        this._updateMenu();
+    let openStateChangedId: number | undefined = this.menu.connect(
+      'open-state-changed',
+      (_menu: typeof this.menu, open: boolean) => {
+        if (open) {
+          this._updateMenu();
+        }
+        return false;
+      },
+    );
+    this.connect('destroy', () => {
+      if (openStateChangedId != null) {
+        this.menu.disconnect(openStateChangedId);
+        openStateChangedId = undefined;
       }
-      return false;
     });
   }
 
